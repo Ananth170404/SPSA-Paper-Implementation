@@ -1,4 +1,4 @@
-# SPSA Paper Implementation
+## SPSA Paper Implementation
 
 A PyTorch reproduction (GPU or CPU) of
 
