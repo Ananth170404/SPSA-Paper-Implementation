@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this reproduction, please cite the original paper."
+title: "SPSA Paper Implementation: a PyTorch reproduction of SPSA for Layer-Wise Training of Deep Networks"
+authors:
+  - family-names: Shyam
+    given-names: Ananth
+  - family-names: Narasimha
+    given-names: Rama
+  - family-names: Bhimireddy
+    given-names: Mahan
+license: MIT
+preferred-citation:
+  type: conference-paper
+  title: "SPSA for Layer-Wise Training of Deep Networks"
+  authors:
+    - family-names: Wulff
+      given-names: Benjamin
+    - family-names: Schuecker
+      given-names: Jannis
+    - family-names: Bauckhage
+      given-names: Christian
+  collection-title: "Artificial Neural Networks and Machine Learning - ICANN 2018"
+  volume: 11141
+  start: 564
+  end: 573
+  publisher:
+    name: Springer
+  year: 2018
+  doi: 10.1007/978-3-030-01424-7_55

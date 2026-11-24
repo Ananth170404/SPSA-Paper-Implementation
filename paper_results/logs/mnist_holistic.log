@@ -1,0 +1,19 @@
+MNIST: 60000 train / 10000 test, network 784x784x196x10 (771270 parameters), device cuda:0 (NVIDIA GeForce RTX 3050 6GB Laptop GPU)
+
+--- SPSA (3 runs in parallel) ---
+[SPSA] epoch    1/12  E mean    4.9235  median    5.0975  test_acc 0.2325  train_acc 0.2296  (25.8s)
+[SPSA] epoch    2/12  E mean    5.4987  median    5.5967  test_acc 0.2734  train_acc 0.2680  (53.7s)
+[SPSA] epoch    3/12  E mean    5.4360  median    5.3262  test_acc 0.3187  train_acc 0.3132  (81.6s)
+[SPSA] epoch    4/12  E mean    5.5376  median    5.4632  test_acc 0.3528  train_acc 0.3478  (109.5s)
+[SPSA] epoch    5/12  E mean    5.4376  median    5.4505  test_acc 0.3934  train_acc 0.3871  (137.6s)
+[SPSA] epoch    6/12  E mean    5.5282  median    5.5965  test_acc 0.4166  train_acc 0.4141  (165.6s)
+[SPSA] epoch    7/12  E mean    5.5667  median    5.5675  test_acc 0.4143  train_acc 0.4097  (193.6s)
+[SPSA] epoch    8/12  E mean    5.5984  median    5.6276  test_acc 0.4439  train_acc 0.4395  (221.7s)
+[SPSA] epoch    9/12  E mean    5.6505  median    5.6749  test_acc 0.4615  train_acc 0.4584  (249.7s)
+[SPSA] epoch   10/12  E mean    5.5976  median    5.5759  test_acc 0.4712  train_acc 0.4654  (277.8s)
+[SPSA] epoch   11/12  E mean    5.6176  median    5.6121  test_acc 0.4668  train_acc 0.4598  (305.9s)
+[SPSA] epoch   12/12  E mean    5.6013  median    5.6331  test_acc 0.4667  train_acc 0.4616  (333.9s)
+[SPSA] 336.4s, final test accuracy per run: [0.4652, 0.4084, 0.5266]
+saved D:\SPSA implementation\spsa-layerwise\results\mnist_771k_holistic.json
+saved D:\SPSA implementation\spsa-layerwise\results\mnist_771k_holistic.json
+saved D:\SPSA implementation\spsa-layerwise\results\fig2_mnist_771k_holistic.png
