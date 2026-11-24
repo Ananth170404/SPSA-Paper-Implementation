@@ -1,6 +1,6 @@
 ## SPSA Paper Implementation
 
-A PyTorch reproduction (GPU or CPU) of
+A PyTorch reproduction (CPU or GPU) of
 
 > B. Wulff, J. Schuecker, C. Bauckhage. **SPSA for Layer-Wise Training of Deep Networks.**
 > ICANN 2018, LNCS 11141, pp. 564–573. https://doi.org/10.1007/978-3-030-01424-7_55
