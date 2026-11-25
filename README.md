@@ -51,6 +51,8 @@ SPSA-Paper-Implementation/
 ├── tests/test_spsa_nn.py       # pytest unit tests
 ├── notebooks/
 │   ├── SPSA_layerwise_training.ipynb   # self-contained notebook: all code + all experiments, executed
+│   ├── MNIST_SPSA_vs_Adam.ipynb       # MNIST: SPSA vs Adam, curves, confusion matrices, per-class metrics
+│   ├── mnist_spsa_vs_adam_results/  # figures + metrics written by that notebook
 │   └── notebook_results/       # json + png written by the notebook run
 ├── paper_results/              # our full-protocol results: data/, figures/, logs/, SUMMARY.md
 ├── data/                       # datasets land here (git-ignored)
@@ -247,6 +249,21 @@ jupyter notebook notebooks/SPSA_layerwise_training.ipynb     # or open it in VS 
   `N_TRIALS_CIRCLES = 20` cuts that to ≈ 15 min.
 * Data: it uses the repository's `data/` folder (or `./data` if the notebook is moved out of the
   repo) and downloads MNIST if needed.
+
+### MNIST comparison notebook: SPSA vs. Adam
+
+[`notebooks/MNIST_SPSA_vs_Adam.ipynb`](notebooks/MNIST_SPSA_vs_Adam.ipynb) trains the 771k network
+with layer-wise SPSA (3 runs, 12 epochs) and with Adam (250 epochs), and compares them in detail:
+* loss curves (train and test) and accuracy curves (train and test);
+* accuracy against compute (forward-pass equivalents) and against wall-clock time;
+* confusion matrices for SPSA at epoch 12 and Adam at epochs 12 and 250;
+* per-class precision, recall and F1, and the most-confused digit pairs;
+* sample predictions, images only one of the two gets right, and confidence (margin) histograms;
+* how far each optimizer moves the weights, per layer and as first-layer weight images.
+
+It uses the repository's `spsa_nn` package, takes about 6 minutes on an RTX 3050, and is saved with
+all outputs. Figures and `metrics.json` are in `notebooks/mnist_spsa_vs_adam_results/`. Set
+`HIDDEN = [196]` for the 155k network, or `QUICK = True` for a 1-minute smoke test.
 
 ### Re-plotting and summarising (no training)
 

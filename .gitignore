@@ -21,3 +21,4 @@ notebooks/data/
 # local material that must not be published (third-party copy, paper PDF)
 working/
 *.pdf
+notebooks/mnist_spsa_vs_adam_results_quick/
