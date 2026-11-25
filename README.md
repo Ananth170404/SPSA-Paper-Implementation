@@ -198,11 +198,17 @@ default).
 
 ```bash
 python scripts/download_mnist.py          # once (also happens automatically)
-python experiments/run_mnist.py           # 3 SPSA runs x 12 epochs + GD 250 epochs, ~6 min on an RTX 3050
+python experiments/run_mnist.py           # 3 SPSA runs x 12 epochs + GD and Adam 250 epochs each, ~6.5 min on an RTX 3050
 ```
 Output: `results/mnist.json`, `results/fig2.png`.
 Options include `--hidden`, `--a --c --alpha --gamma --t-max --epochs --runs --objective --batch-size --init`,
-`--gd-lr --gd-epochs --gd-batch-size`, and `--skip-gd` / `--skip-spsa`.
+`--gd-lr --gd-epochs --gd-batch-size`, `--adam-lr --adam-epochs --adam-batch-size`, and
+`--skip-spsa` / `--skip-gd` / `--skip-adam`.
+
+Besides the paper's gradient-descent baseline, every MNIST run also trains an
+**Adam** baseline (`torch.optim.Adam`, lr 3·10⁻⁴, full batch, 250 epochs) on
+the same network, initialisation and loss, so SPSA is compared with both a
+plain and an adaptive conventional optimizer.
 
 ### 4.5 MNIST ablations from the text of Sect. 4.2
 
@@ -269,7 +275,8 @@ python -m pytest -q          # 19 tests, ~10 s (the CUDA test is skipped without
 | Eqs. 11–13 (top-down / bottom-up / random) | `layerwise.epoch_schedule` |
 | holistic baseline | `order="holistic"` |
 | Sect. 4.2 "first weights, then biases" | `TrainConfig(split_bias=True)` |
-| GD baseline (`tf.train.GradientDescentOptimizer`, lr 0.01) | `spsa_nn/gd.py` |
+| GD baseline (`tf.train.GradientDescentOptimizer`, lr 0.01) | `spsa_nn/gd.py`, `optimizer="sgd"` |
+| Adam baseline (not in the paper) | `spsa_nn/gd.py`, `optimizer="adam"` |
 
 ## 6. Settings and the choices the paper leaves open
 
@@ -299,6 +306,7 @@ changed from the command line:
 | MNIST SPSA objective | `tf.reduce_mean((y−ŷ)²)` = Eq. 9 / (n·10) | TF-style loss. With Eq. 9 / n, a = 0.1 diverges |
 | logged MNIST error | Eq. 9 / n | the scale of the y-axis in Fig. 2 |
 | GD baseline | full-batch | matches the slow GD curve in Fig. 2 (lr 0.01) |
+| Adam baseline (extra, not in the paper) | lr 3·10⁻⁴, betas 0.9 / 0.999, full batch, 250 epochs | full batch keeps one update per epoch, like GD. The usual 10⁻³ collapses on the 771k network (it predicts one class for all 250 epochs); 3·10⁻⁴ trains both networks |
 | holistic budget | L SPSA calls of t_max iterations per epoch | same number of forward passes as layer-wise |
 | random order | independent permutation per trial and per epoch | Eq. 13 |
 
@@ -342,6 +350,7 @@ against them: `python experiments/summarize.py --dir paper_results/data`.
 | Fig. 1c/f: holistic doesn't converge on circles | ✅ yes | only 40 % of trials ≥ 95 % accuracy, vs 100 % for layer-wise |
 | Fig. 2: SPSA learns faster than GD in the first epochs | ✅ yes | epoch 12: 0.515 (SPSA) vs 0.389 (GD) test accuracy |
 | Fig. 2: GD ends higher after long training | ✅ yes | GD 0.848 at epoch 250 |
+| Extra: comparison with Adam (not in the paper) | – | Adam is ahead of SPSA from epoch 4 on the 771k network (0.784 vs 0.515 at epoch 12) and ends at 0.937; on the 155k network Adam ≈ SPSA at epoch 12 (0.532 vs 0.548), then 0.896 |
 | Fig. 2: SPSA ≈ 0.72 test accuracy at epoch 12, training error falling | ⚠️ partly | 0.515 (0.48–0.56 over 3 runs); the training error rises slightly (2.55 → 2.78) |
 | Sect. 4.2: holistic SPSA fails on MNIST | ⚠️ partly | the objective diverges (E 2.55 → 5.60); accuracy still climbs to 0.47 |
 | Sect. 4.2: no learning without the weights/biases split | ❌ no | without the split: 0.527, same as with it (0.515) |
@@ -380,6 +389,7 @@ Main experiment, 771,270-parameter network (784×784×196×10):
 |---|---|---|---|---|---|---|---|---|
 | `mnist` | 784×784×196×10 (771,270) | SPSA | bottom-up | yes | 12 | 2.55 → 2.78 | 0.481, 0.558, 0.505 | 0.515 |
 | `mnist` | 784×784×196×10 (771,270) | GD (full batch, lr 0.01) | – | – | 250 | 2.46 → 0.48 | 0.389 | 0.848 |
+| `mnist` | 784×784×196×10 (771,270) | **Adam** (full batch, lr 3·10⁻⁴) | – | – | 250 | 2.46 → 0.22 | 0.784 | **0.937** |
 | `mnist_holistic` | 784×784×196×10 (771,270) | SPSA | holistic | yes | 12 | 2.55 → **5.60** | 0.465, 0.408, 0.527 | 0.467 |
 | `mnist_no_split_bias` | 784×784×196×10 (771,270) | SPSA | bottom-up | no | 12 | 2.55 → 2.71 | 0.524, 0.484, 0.572 | 0.527 |
 
@@ -389,6 +399,7 @@ For comparison, the literal text topology (784×196×10):
 |---|---|---|---|---|---|---|---|---|
 | `mnist_155k` | 784×196×10 (155,830) | SPSA | bottom-up | yes | 12 | 2.54 → 2.01 | 0.519, 0.566, 0.558 | 0.548 |
 | `mnist_155k` | 784×196×10 (155,830) | GD (full batch, lr 0.01) | – | – | 250 | 2.34 → 0.55 | 0.352 | 0.805 |
+| `mnist_155k` | 784×196×10 (155,830) | **Adam** (full batch, lr 3·10⁻⁴) | – | – | 250 | 2.34 → 0.33 | 0.532 | **0.896** |
 | `mnist_155k_holistic` | 784×196×10 (155,830) | SPSA | holistic | yes | 12 | 2.54 → **4.37** | 0.482, 0.493, 0.481 | 0.485 |
 | `mnist_155k_no_split_bias` | 784×196×10 (155,830) | SPSA | bottom-up | no | 12 | 2.54 → 1.98 | 0.559, 0.587, 0.530 | 0.558 |
 
@@ -406,15 +417,46 @@ paper doesn't report (init, loss scale, gain schedule), all of which can be
 changed through `run_mnist.py` flags. GD benefits from the bigger network
 (0.848 vs 0.805).
 
+#### SPSA vs. GD vs. Adam
+
+Test accuracy (mean of the 3 SPSA runs; GD and Adam are single runs):
+
+| network | method | epoch 1 | epoch 3 | epoch 12 | epoch 50 | epoch 250 | training error, epoch 12 |
+|---|---|---|---|---|---|---|---|
+| 771k | SPSA (forward passes only) | **0.265** | **0.431** | 0.515 | – | – | 2.78 |
+| 771k | GD, lr 0.01 | 0.157 | 0.231 | 0.389 | 0.628 | 0.848 | 1.42 |
+| 771k | Adam, lr 3·10⁻⁴ | 0.166 | 0.407 | **0.784** | 0.860 | **0.937** | 0.72 |
+| 155k | SPSA (forward passes only) | **0.195** | **0.299** | **0.548** | – | – | 2.01 |
+| 155k | GD, lr 0.01 | 0.095 | 0.136 | 0.352 | 0.630 | 0.805 | 1.24 |
+| 155k | Adam, lr 3·10⁻⁴ | 0.094 | 0.149 | 0.532 | 0.800 | **0.896** | 1.07 |
+
+* **Early on, SPSA leads both.** It is ahead of GD and Adam for the first 3
+  epochs on both networks, and still ahead of GD at epoch 12. It is also tied
+  with Adam at epoch 12 on the 155k network.
+* **Adam is the strongest overall.** It overtakes SPSA around epoch 4 on the
+  771k network and ends highest on both (0.937 / 0.896). Its training error
+  falls steadily, while SPSA's stalls (155k) or creeps up (771k).
+* **Plain GD is the slowest early** but keeps improving; GD and Adam both
+  continue well past where SPSA levels off at about 0.5.
+* **Epochs aren't equal work.** One SPSA epoch is 6 blocks (weights and biases
+  of 3 layers) × 50 iterations = 300 parameter updates and 600 forward passes
+  over the training set. One GD or Adam epoch is a single update, using one
+  forward and one backward pass. SPSA's early lead therefore costs far more
+  forward passes, but it never needs a gradient or backpropagation.
+* **Adam needs a smaller learning rate here.** At Adam's usual lr = 10⁻³, the
+  771k network gets stuck predicting a single digit (test accuracy 0.1135 for
+  all 250 epochs, while the error still falls). lr = 3·10⁻⁴ trains both
+  networks, so that value is used for both.
+
 ### Runtimes (RTX 3050 Laptop GPU)
 
 | experiment | time |
 |---|---|
 | xor or moons, all 4 variants | ≈ 1.5 min |
 | circles, all 4 variants (100 trials × 500 epochs) | ≈ 70 min |
-| MNIST 771k: SPSA 3 runs × 12 epochs + GD 250 epochs | ≈ 5 min + 40 s |
+| MNIST 771k: SPSA 3 runs × 12 epochs + GD and Adam 250 epochs each | ≈ 5 min + 40 s + 40 s |
 | MNIST 771k ablations: holistic / no split | ≈ 6 min / 2.5 min |
-| MNIST 155k: SPSA + GD, and each ablation | ≈ 1.2 min, 0.5–1 min |
+| MNIST 155k: SPSA + GD + Adam, and each ablation | ≈ 1.3 min, 0.5–1 min |
 
 Random order and holistic are slower because they can't cache the outputs
 of the fixed lower layers. The tiny didactic networks are limited by

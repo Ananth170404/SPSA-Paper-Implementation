@@ -41,7 +41,7 @@ def mnist_table(d: Path) -> list[str]:
         sizes = [784, *res.get("args", {}).get("hidden", [784, 196]), 10]
         n_params = sum(a * b + b for a, b in zip(sizes[:-1], sizes[1:]))
         net = f"{'x'.join(map(str, sizes))} ({n_params:,})"
-        for key, label in (("spsa", "SPSA"), ("gd", "GD")):
+        for key, label in (("spsa", "SPSA"), ("gd", "GD"), ("adam", "Adam")):
             if key not in res:
                 continue
             h, cfg = res[key], res[key]["config"]

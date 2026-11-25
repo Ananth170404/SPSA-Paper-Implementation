@@ -1,4 +1,4 @@
-"""Reproduce Fig. 2: MNIST, layer-wise SPSA vs gradient descent.
+"""Reproduce Fig. 2: MNIST, layer-wise SPSA vs gradient descent, plus an Adam baseline.
 
 Network: 784x784x196x10 tanh network = 771,270 parameters, the count the paper states
 (p. 570) and its "close to a million parameters" claims. The paper's prose topology
@@ -11,7 +11,7 @@ beta = 1, one-hot targets in {0, 1}^10. GD baseline: learning rate 0.01.
 Examples
 --------
     python experiments/run_mnist.py                    # SPSA (3 runs) + GD, full paper protocol
-    python experiments/run_mnist.py --skip-gd          # only SPSA
+    python experiments/run_mnist.py --skip-gd --skip-adam   # only SPSA
     python experiments/run_mnist.py --quick            # 10k training images, 3 SPSA / 20 GD epochs
     python experiments/run_mnist.py --device cpu
 
@@ -62,6 +62,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--gd-epochs", type=int, default=250)
     p.add_argument("--gd-batch-size", type=int, default=None, help="default: full-batch GD")
     p.add_argument("--skip-gd", action="store_true")
+    # Adam baseline (not in the paper; added as a second conventional optimizer)
+    p.add_argument("--adam-lr", type=float, default=0.0003,
+                   help="Adam learning rate; 3e-4 (1e-3 collapses to a single predicted class on the 771k network)")
+    p.add_argument("--adam-epochs", type=int, default=None, help="default: same as --gd-epochs")
+    p.add_argument("--adam-batch-size", type=int, default=None, help="default: full batch, like the GD baseline")
+    p.add_argument("--skip-adam", action="store_true")
     p.add_argument("--skip-spsa", action="store_true")
     # general
     p.add_argument("--hidden", type=int, nargs="+", default=[784, 196],
@@ -85,6 +91,7 @@ def main() -> None:
         args.n_train = args.n_train or 10000
         args.epochs = min(args.epochs, 3)
         args.gd_epochs = min(args.gd_epochs, 20)
+        args.adam_epochs = min(args.adam_epochs or args.gd_epochs, 20)
     seed_everything(args.seed)
     device = get_device(args.device)
     SIZES = [784, *args.hidden, 10]
@@ -127,15 +134,24 @@ def main() -> None:
                             log_every=max(1, args.gd_epochs // 10), log_prefix="[GD] ")
         out["gd"] = {"config": gcfg.to_dict(), **ghist}
 
-    if "spsa" not in out and "gd" not in out:
+    if not args.skip_adam:
+        acfg = gd.GDConfig(sizes=SIZES, lr=args.adam_lr, epochs=args.adam_epochs or args.gd_epochs,
+                           batch_size=args.adam_batch_size, optimizer="adam", beta=1.0, init=args.init,
+                           seed=args.seed)
+        print("\n--- Adam baseline ---")
+        _, ahist = gd.train(x_tr, y_tr, acfg, device, eval_fn=eval_fn,
+                            log_every=max(1, acfg.epochs // 10), log_prefix="[Adam] ")
+        out["adam"] = {"config": acfg.to_dict(), **ahist}
+
+    if not any(k in out for k in ("spsa", "gd", "adam")):
         return
     # keep results of a previous run of the other method if only one was re-run
     prev_path = results_dir() / f"{args.name}.json"
-    if prev_path.exists() and (args.skip_gd or args.skip_spsa):
+    if prev_path.exists() and (args.skip_gd or args.skip_spsa or args.skip_adam):
         from _common import load_json
 
         prev = load_json(prev_path)
-        for k in ("spsa", "gd"):
+        for k in ("spsa", "gd", "adam"):
             if k not in out and k in prev:
                 out[k] = prev[k]
     save_json(out, prev_path)

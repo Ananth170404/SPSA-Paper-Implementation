@@ -67,7 +67,7 @@ def plot_mnist_results(name: str = "mnist") -> None:
         return
     res = load_json(path)
     out = results_dir() / ("fig2.png" if name == "mnist" else f"fig2_{name}.png")
-    plot_mnist(res.get("spsa"), res.get("gd"), str(out))
+    plot_mnist(res.get("spsa"), res.get("gd"), str(out), adam=res.get("adam"))
     print(f"saved {out}")
 
 

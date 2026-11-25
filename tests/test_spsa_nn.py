@@ -119,6 +119,15 @@ def test_gd_baseline_runs():
     assert len(hist["error"]) == 4
 
 
+def test_adam_baseline_reduces_error():
+    data = datasets.make_moons(n=100)
+    cfg = gd.GDConfig(sizes=[2, 5, 1], lr=0.01, epochs=30, beta=0.5, optimizer="adam")
+    _, hist = gd.train(data.x, data.y, cfg, CPU)
+    assert len(hist["error"]) == 31 and hist["error"][-1][0] < hist["error"][0][0]
+    with pytest.raises(ValueError):
+        gd.train(data.x, data.y, gd.GDConfig(sizes=[2, 5, 1], epochs=1, optimizer="rmsprop"), CPU)
+
+
 def test_datasets_shapes_and_labels():
     for name, m in (("xor", 1), ("moons", 1), ("circles", 3)):
         d = datasets.load_didactic(name)

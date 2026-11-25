@@ -1,7 +1,13 @@
-"""Gradient-descent baseline (backpropagation) used for comparison in Fig. 2.
+"""Backpropagation baselines used for comparison in Fig. 2.
 
-Mirrors ``tf.train.GradientDescentOptimizer(learning_rate)`` applied to the
-same network and the same squared-residual objective (mean over the batch).
+optimizer='sgd'  plain gradient descent, p <- p - lr * grad; with the default
+                 full batch this mirrors ``tf.train.GradientDescentOptimizer``
+                 as in the paper.
+optimizer='adam' Adam (Kingma & Ba, 2015) with the usual defaults
+                 (betas 0.9 / 0.999, eps 1e-8), via ``torch.optim.Adam``.
+
+Both use the same network, initialisation and squared-residual objective
+(mean over the batch) as SPSA.
 """
 from __future__ import annotations
 
@@ -21,6 +27,7 @@ class GDConfig:
     lr: float = 0.01
     epochs: int = 250
     batch_size: Optional[int] = None   # None = full-batch gradient descent
+    optimizer: str = "sgd"             # 'sgd' (plain gradient descent) or 'adam'
     beta: float = 1.0
     init: str = "glorot"
     seed: int = 0
@@ -45,6 +52,10 @@ def train(
         p.requires_grad_(True)
     n = x.shape[0]
     bs = cfg.batch_size or n
+    if cfg.optimizer == "adam":
+        adam = torch.optim.Adam(params, lr=cfg.lr)
+    elif cfg.optimizer != "sgd":
+        raise ValueError(f"optimizer must be 'sgd' or 'adam', got {cfg.optimizer!r}")
 
     history: Dict[str, list] = {"error": [], "time": []}
 
@@ -67,10 +78,15 @@ def train(
                 idx = perm[i:i + bs]
                 xb, yb = x[idx], y[idx]
             loss = mlp.error(mlp.forward(xb, params, cfg.beta), yb, "mean").sum()
-            grads = torch.autograd.grad(loss, params)
-            with torch.no_grad():
-                for p, g in zip(params, grads):
-                    p.sub_(cfg.lr * g)
+            if cfg.optimizer == "adam":
+                adam.zero_grad(set_to_none=True)
+                loss.backward()
+                adam.step()
+            else:
+                grads = torch.autograd.grad(loss, params)
+                with torch.no_grad():
+                    for p, g in zip(params, grads):
+                        p.sub_(cfg.lr * g)
         record(time.perf_counter() - t0)
         if log_every and (e % log_every == 0 or e == cfg.epochs):
             msg = f"{log_prefix}epoch {e:4d}/{cfg.epochs}  E {history['error'][-1][0]:.4f}"

@@ -1,0 +1,43 @@
+MNIST: 60000 train / 10000 test, network 784x196x10 (155830 parameters), device cuda:0 (NVIDIA GeForce RTX 3050 6GB Laptop GPU)
+
+--- SPSA (3 runs in parallel) ---
+[SPSA] epoch    1/12  E mean    2.3053  median    2.3354  test_acc 0.1950  train_acc 0.1945  (5.0s)
+[SPSA] epoch    2/12  E mean    2.1660  median    2.2652  test_acc 0.2596  train_acc 0.2603  (9.6s)
+[SPSA] epoch    3/12  E mean    2.0748  median    2.1572  test_acc 0.2988  train_acc 0.2999  (14.2s)
+[SPSA] epoch    4/12  E mean    2.0945  median    2.1054  test_acc 0.3581  train_acc 0.3578  (18.8s)
+[SPSA] epoch    5/12  E mean    2.0800  median    2.1068  test_acc 0.4071  train_acc 0.4066  (23.4s)
+[SPSA] epoch    6/12  E mean    2.0592  median    2.0733  test_acc 0.4275  train_acc 0.4271  (28.0s)
+[SPSA] epoch    7/12  E mean    2.0483  median    2.0646  test_acc 0.4504  train_acc 0.4465  (32.7s)
+[SPSA] epoch    8/12  E mean    2.0498  median    2.0359  test_acc 0.4777  train_acc 0.4766  (37.3s)
+[SPSA] epoch    9/12  E mean    2.0281  median    2.0378  test_acc 0.5053  train_acc 0.4994  (42.0s)
+[SPSA] epoch   10/12  E mean    2.0256  median    2.0531  test_acc 0.5215  train_acc 0.5159  (46.6s)
+[SPSA] epoch   11/12  E mean    2.0240  median    2.0325  test_acc 0.5386  train_acc 0.5312  (51.2s)
+[SPSA] epoch   12/12  E mean    2.0148  median    2.0202  test_acc 0.5479  train_acc 0.5403  (55.8s)
+[SPSA] 56.1s, final test accuracy per run: [0.5194, 0.5657, 0.5585]
+saved D:\SPSA implementation\spsa-layerwise\results\mnist_155k.json
+
+--- Gradient descent baseline ---
+[GD] epoch   25/250  E 0.9988  test_acc 0.5155  train_acc 0.5155  (0.8s)
+[GD] epoch   50/250  E 0.8209  test_acc 0.6304  train_acc 0.6329  (1.7s)
+[GD] epoch   75/250  E 0.7344  test_acc 0.6829  train_acc 0.6871  (2.5s)
+[GD] epoch  100/250  E 0.6806  test_acc 0.7194  train_acc 0.7195  (3.3s)
+[GD] epoch  125/250  E 0.6432  test_acc 0.7453  train_acc 0.7426  (4.1s)
+[GD] epoch  150/250  E 0.6153  test_acc 0.7653  train_acc 0.7596  (4.9s)
+[GD] epoch  175/250  E 0.5935  test_acc 0.7792  train_acc 0.7725  (5.7s)
+[GD] epoch  200/250  E 0.5758  test_acc 0.7900  train_acc 0.7824  (6.6s)
+[GD] epoch  225/250  E 0.5610  test_acc 0.7982  train_acc 0.7909  (7.4s)
+[GD] epoch  250/250  E 0.5485  test_acc 0.8050  train_acc 0.7979  (8.2s)
+
+--- Adam baseline ---
+[Adam] epoch   25/250  E 0.7600  test_acc 0.7102  train_acc 0.7124  (1.2s)
+[Adam] epoch   50/250  E 0.5601  test_acc 0.7998  train_acc 0.7944  (2.0s)
+[Adam] epoch   75/250  E 0.4911  test_acc 0.8335  train_acc 0.8239  (2.8s)
+[Adam] epoch  100/250  E 0.4521  test_acc 0.8498  train_acc 0.8406  (3.6s)
+[Adam] epoch  125/250  E 0.4244  test_acc 0.8614  train_acc 0.8520  (4.5s)
+[Adam] epoch  150/250  E 0.4019  test_acc 0.8717  train_acc 0.8612  (5.3s)
+[Adam] epoch  175/250  E 0.3823  test_acc 0.8788  train_acc 0.8703  (6.1s)
+[Adam] epoch  200/250  E 0.3645  test_acc 0.8861  train_acc 0.8788  (6.9s)
+[Adam] epoch  225/250  E 0.3481  test_acc 0.8913  train_acc 0.8860  (7.7s)
+[Adam] epoch  250/250  E 0.3328  test_acc 0.8964  train_acc 0.8931  (8.6s)
+saved D:\SPSA implementation\spsa-layerwise\results\mnist_155k.json
+saved D:\SPSA implementation\spsa-layerwise\results\fig2_mnist_155k.png

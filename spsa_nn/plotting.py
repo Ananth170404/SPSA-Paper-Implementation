@@ -61,8 +61,8 @@ def plot_error_curves(ax, errors: Dict[str, Sequence], title: Optional[str] = No
 
 
 def plot_mnist(spsa: Dict[str, list], gd: Optional[Dict[str, list]], path: str,
-               split_at: Optional[int] = None) -> None:
-    """Fig. 2: training error and test accuracy, SPSA vs GD, with a broken x-axis."""
+               split_at: Optional[int] = None, adam: Optional[Dict[str, list]] = None) -> None:
+    """Fig. 2: training error and test accuracy, SPSA vs GD (and Adam), with a broken x-axis."""
     fig = plt.figure(figsize=(11, 4))
     keys = [("error", r"error $E(\mathcal{D}, \mathcal{W}_e)$", "MNIST training error"),
             ("test_acc", "accuracy", "MNIST classification accuracy")]
@@ -72,6 +72,7 @@ def plot_mnist(spsa: Dict[str, list], gd: Optional[Dict[str, list]], path: str,
         left = fig.add_subplot(1, 4, 2 * i + 1)
         right = fig.add_subplot(1, 4, 2 * i + 2, sharey=left)
         for name, hist, color in (("GD", gd, VARIANT_COLORS["top-down"]),
+                                  ("Adam", adam, VARIANT_COLORS["random"]),
                                   ("SPSA", spsa, VARIANT_COLORS["bottom-up"])):
             if hist is None or key not in hist:
                 continue
@@ -81,8 +82,9 @@ def plot_mnist(spsa: Dict[str, list], gd: Optional[Dict[str, list]], path: str,
             if len(v) > split:
                 right.plot(ep[split:], v[split:], color=color, lw=1.2)
         left.set_xlim(0, split)
-        if gd is not None and len(gd.get(key, [])) > split:
-            right.set_xlim(split, len(gd[key]) - 1)
+        longest = max((len(h.get(key, [])) for h in (gd, adam) if h is not None), default=0)
+        if longest > split + 1:
+            right.set_xlim(split, longest - 1)
         else:
             right.set_visible(False)
         left.set_ylabel(ylabel)
