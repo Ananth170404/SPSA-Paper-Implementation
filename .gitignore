@@ -9,19 +9,19 @@ venv/
 .ipynb_checkpoints/
 
 # downloaded data and experiment outputs
-code/data/*
-!code/data/.gitkeep
-code/results/*
-!code/results/.gitkeep
+extra/data/*
+!extra/data/.gitkeep
+extra/results/*
+!extra/results/.gitkeep
 data/*
 results/*
 
 # notebook smoke-test outputs
-code/notebooks/notebook_results_quick/
-code/notebooks/data/
+extra/notebooks/notebook_results_quick/
+extra/notebooks/data/
 notebooks/notebook_results_quick/
 
 # local material that must not be published
 working/
 *.pdf
-code/notebooks/mnist_spsa_vs_adam_results_quick/
+extra/notebooks/mnist_spsa_vs_adam_results_quick/
