@@ -86,18 +86,21 @@ $$f(x, y) = x^3 + y^3 - 3xy + 1.0$$
 | **3. Normal GD** | Analytical Calculus | **Yes (Analytic)** | Exact Grad | **0.000000** | $(1.0000, 1.0000)$ | $(1.0, 1.0)$ |
 | **4. GD with Momentum** | Analytical + Polyak ($\beta=0.70$) | **Yes (Analytic)** | Exact Grad | **0.000000** | $(1.0000, 1.0000)$ | $(1.0, 1.0)$ |
 
-#### Checkpoint Convergence Across Iterations:
+#### Epoch-Wise Convergence Comparison (10 Epoch Cycles, 15 Updates / Epoch):
 
-| Iteration | 1. Holistic SPSA Loss | 2. Layer-Wise SPSA Loss | 3. Normal GD Loss | 4. GD with Momentum Loss |
-|:---:|:---:|:---:|:---:|:---:|
-| **0** | 7.227000 | 7.227000 | 7.227000 | 7.227000 |
-| **15** | 0.226168 | 0.578728 | 0.000506 | 0.001364 |
-| **30** | 0.036917 | 0.112899 | 0.000003 | 0.000143 |
-| **45** | 0.015183 | 0.030824 | 0.000000 | 0.000001 |
-| **60** | 0.007560 | 0.010251 | 0.000000 | 0.000000 |
-| **90** | 0.003374 | 0.001648 | 0.000000 | 0.000000 |
-| **120** | 0.002213 | 0.000374 | 0.000000 | 0.000000 |
-| **150** | **0.001556** | **0.000112** | **0.000000** | **0.000000** |
+| Epoch | Iteration | 1. Holistic SPSA Loss | 2. Layer-Wise SPSA Loss | 3. Normal GD Loss | 4. GD with Momentum Loss |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **0** | 0 | 7.227000 | 7.227000 | 7.227000 | 7.227000 |
+| **1** | 15 | 0.226168 | 0.578728 | 0.000506 | 0.001364 |
+| **2** | 30 | 0.036917 | 0.112899 | 0.000003 | 0.000143 |
+| **3** | 45 | 0.015183 | 0.030824 | 0.000000 | 0.000001 |
+| **4** | 60 | 0.007560 | 0.010251 | 0.000000 | 0.000000 |
+| **5** | 75 | 0.004893 | 0.003904 | 0.000000 | 0.000000 |
+| **6** | 90 | 0.003374 | 0.001648 | 0.000000 | 0.000000 |
+| **7** | 105 | 0.002515 | 0.000757 | 0.000000 | 0.000000 |
+| **8** | 120 | 0.002213 | 0.000374 | 0.000000 | 0.000000 |
+| **9** | 135 | 0.001874 | 0.000198 | 0.000000 | 0.000000 |
+| **10** | 150 | **0.001556** | **0.000112** | **0.000000** | **0.000000** |
 
 *Insight*: Layer-Wise SPSA achieves **14x higher precision** than Holistic SPSA because decoupling coordinates eliminates destructive cross-coupling gradient noise.
 
@@ -128,9 +131,22 @@ Part 2 trains an 81-parameter multi-layer feed-forward neural network on the non
 | **SGD (Momentum=0.9)** | Yes (Autograd) | 249.92 | **0.0003** | **100.0%** | 0.48 s |
 | **Adam Optimizer** | Yes (Autograd) | 249.92 | **0.0490** | **100.0%** | 0.70 s |
 
-#### Periodic Checkpoint Table (Logged Every 20 Epochs):
+#### Table 2A: Initial Epoch Dynamics (Epochs 0 to 20 — Loss & Accuracy):
 
-| Epoch | Layer-Wise SPSA | Holistic SPSA | Pure SGD | SGD (Momentum) | Adam |
+| Epoch | Layer-Wise SPSA (0 bp) | Holistic SPSA (0 bp) | Pure Vanilla SGD | SGD with Momentum (0.9) | Adam Optimizer |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **0** | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) |
+| **1** | **Loss: 186.18 (81.2%)** | Loss: 215.00 (78.4%) | Loss: 252.79 (50.0%) | Loss: 227.81 (66.0%) | Loss: 239.84 (66.0%) |
+| **2** | **Loss: 209.30 (66.8%)** | Loss: 336.00 (66.4%) | Loss: 266.59 (50.0%) | Loss: 290.82 (50.0%) | Loss: 230.93 (58.0%) |
+| **3** | **Loss: 111.27 (87.2%)** | Loss: 352.00 (64.8%) | Loss: 253.96 (50.0%) | Loss: 196.71 (72.4%) | Loss: 221.70 (66.8%) |
+| **5** | **Loss: 36.22 (96.8%)** | Loss: 352.00 (64.8%) | Loss: 242.83 (50.0%) | Loss: 133.72 (82.0%) | Loss: 196.86 (82.0%) |
+| **10** | **Loss: 0.83 (100.0%)** | Loss: 352.00 (64.8%) | Loss: 206.03 (56.0%) | **Loss: 0.15 (100.0%)** | Loss: 132.23 (83.6%) |
+| **15** | Loss: 147.78 (84.8%) | Loss: 352.00 (64.8%) | Loss: 144.42 (79.2%) | **Loss: 0.01 (100.0%)** | Loss: 36.26 (99.2%) |
+| **20** | **Loss: 8.30 (99.2%)** | Loss: 352.00 (64.8%) | Loss: 111.61 (87.6%) | **Loss: 0.00 (100.0%)** | **Loss: 2.42 (100.0%)** |
+
+#### Table 2B: Full Training Progression (Logged Every 20 Epochs to Epoch 100):
+
+| Epoch | Layer-Wise SPSA (0 bp) | Holistic SPSA (0 bp) | Pure Vanilla SGD | SGD with Momentum (0.9) | Adam Optimizer |
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | **0** | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) |
 | **20** | Loss: 8.30 (99.2%) | Loss: 352.00 (64.8%) | Loss: 499.98 (50.0%) | Loss: 0.00 (100.0%) | Loss: 2.42 (100.0%) |
@@ -148,13 +164,14 @@ Section 4.2 & Figure 2 of Wulff et al. (ICANN 2018) observe that Layer-Wise SPSA
 
 | Epoch | Layer-Wise SPSA (0 bp) | Holistic SPSA (0 bp) | Pure Vanilla GD | GD + Momentum (0.9) | Adam Optimizer |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| **0** | **249.92** | 249.92 | 249.92 | 249.92 | 249.92 |
-| **1** | **186.18** | 215.00 | 323.91 | 227.81 | 239.84 |
-| **2** | **209.30** | 336.00 | 499.58 | 290.82 | 230.93 |
-| **3** | **111.27** | 352.00 | 499.45 | 196.71 | 221.70 |
-| **5** | **36.22** | 352.00 | 498.61 | 133.72 | 196.86 |
-| **10** | **0.83** | 352.00 | 333.46 | 0.15 | 132.23 |
-| **20** | **8.30** | 352.00 | 499.98 | 0.00 | 2.42 |
+| **0** | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) |
+| **1** | **Loss: 186.18 (81.2%)** | Loss: 215.00 (78.4%) | Loss: 252.79 (50.0%) | Loss: 227.81 (66.0%) | Loss: 239.84 (66.0%) |
+| **2** | **Loss: 209.30 (66.8%)** | Loss: 336.00 (66.4%) | Loss: 266.59 (50.0%) | Loss: 290.82 (50.0%) | Loss: 230.93 (58.0%) |
+| **3** | **Loss: 111.27 (87.2%)** | Loss: 352.00 (64.8%) | Loss: 253.96 (50.0%) | Loss: 196.71 (72.4%) | Loss: 221.70 (66.8%) |
+| **5** | **Loss: 36.22 (96.8%)** | Loss: 352.00 (64.8%) | Loss: 242.83 (50.0%) | Loss: 133.72 (82.0%) | Loss: 196.86 (82.0%) |
+| **10** | **Loss: 0.83 (100.0%)** | Loss: 352.00 (64.8%) | Loss: 206.03 (56.0%) | **Loss: 0.15 (100.0%)** | Loss: 132.23 (83.6%) |
+| **15** | Loss: 147.78 (84.8%) | Loss: 352.00 (64.8%) | Loss: 144.42 (79.2%) | **Loss: 0.01 (100.0%)** | Loss: 36.26 (99.2%) |
+| **20** | **Loss: 8.30 (99.2%)** | Loss: 352.00 (64.8%) | Loss: 111.61 (87.6%) | **Loss: 0.00 (100.0%)** | **Loss: 2.42 (100.0%)** |
 
 **Theoretical Explanation**:
 1. **Finite Exploratory Jumps ($c_t \Delta$)**: SPSA evaluates loss at $\theta \pm c_t \Delta$. Unlike infinitesimal gradients ($\nabla L \approx 0$) that vanish on flat saddles, finite displacement acts as a stochastic probe that explores the local neighborhood and escapes plateau regions immediately.
