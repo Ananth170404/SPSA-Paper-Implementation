@@ -8,20 +8,10 @@ dist/
 venv/
 .ipynb_checkpoints/
 
-# downloaded data and experiment outputs
-extra/data/*
-!extra/data/.gitkeep
-extra/results/*
-!extra/results/.gitkeep
+# Data and experiment outputs
 data/*
 results/*
 
-# notebook smoke-test outputs
-extra/notebooks/notebook_results_quick/
-extra/notebooks/data/
-notebooks/notebook_results_quick/
-
-# local material that must not be published
+# Local artifacts
 working/
 *.pdf
-extra/notebooks/mnist_spsa_vs_adam_results_quick/

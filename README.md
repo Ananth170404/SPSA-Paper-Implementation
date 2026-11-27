@@ -36,18 +36,9 @@ A comprehensive implementation and empirical reproduction of **Simultaneous Pert
 │           ├── part2_decision_boundaries.png        # 2D decision boundary landscapes for all models
 │           └── loss_every_20_epochs.csv              # Neural network 20-epoch checkpoint logs
 │
-├── extra/                               # Full reproduction of the original ICANN 2018 paper
-│   ├── README.md                        # Dedicated comprehensive README for the paper reproduction
-│   ├── spsa_nn/                         # Core PyTorch library (Algorithm 1 & 2, datasets, device, MLP)
-│   ├── experiments/                     # Scripts reproducing Fig. 1 (XOR/Moons/Circles) and Fig. 2 (MNIST)
-│   ├── scripts/                         # Setup checks, data downloaders, reproduction shell scripts
-│   ├── notebooks/                       # Full-protocol walkthrough notebooks (SPSA, MNIST vs Adam)
-│   ├── paper_results/                   # Full-protocol reference outputs, data JSONs, and summary tables
-│   ├── tests/                           # Pytest test suite
-│   ├── requirements.txt                 # Dependency specification
-│   ├── setup.py                         # Installable package setup
-│   └── CITATION.cff                     # Citation metadata
-│
+├── CITATION.cff                         # Citation metadata
+├── LICENSE                              # MIT License
+├── requirements.txt                     # Dependencies
 └── README.md                            # Main project overview (This file)
 ```
 
@@ -207,21 +198,7 @@ jupyter notebook spsa_demonstration.ipynb
 
 ---
 
-## 3. Paper Implementation Reproduction (`extra/`)
-
-The `extra/` directory contains the complete PyTorch reproduction of the full experimental protocol from Wulff et al. (ICANN 2018):
-
-- **Didactic Problems (Section 4.1, Figure 1)**: Reproductions on XOR ($2 \times 5 \times 5 \times 5 \times 1$), Moons ($2 \times 5 \times 5 \times 5 \times 1$), and Circles ($2 \times 10^5 \times 3$), testing bottom-up, top-down, random, and holistic layer ordering.
-- **MNIST Benchmarks (Section 4.2, Figure 2)**: Full-scale reproduction on MNIST using both the 771,270-parameter network ($784 \times 784 \times 196 \times 10$) and the 155,830-parameter network ($784 \times 196 \times 10$), comparing SPSA against full-batch Gradient Descent and Adam.
-- **Ablation Studies**: Evaluation of the weights/biases split and holistic SPSA failure modes on MNIST.
-- **PyTorch Library (`spsa_nn`)**: Modular implementation including Algorithm 1, Algorithm 2, GPU/CPU auto-dispatch, datasets, and plotting routines.
-- **Unit Tests & CI**: Automated testing suite via `pytest` and GitHub Actions.
-
-> **Note**: For full reproduction commands, environment configuration, GPU flags, and extended protocol documentation, please refer to the dedicated [extra/README.md](extra/README.md).
-
----
-
-## 4. Citation
+## 3. Citation
 
 If you use this codebase or reproduction in your research, please cite:
 
