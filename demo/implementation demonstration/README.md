@@ -72,7 +72,7 @@ $$f(x, y) = x^3 + y^3 - 3xy + 1.0$$
 | **9** | 135 | 0.001874 | 0.000198 | 0.000000 | 0.000005 |
 | **10** | 150 | **0.001602** | **0.000116** | **0.000000** | **0.000023** |
 
-*Insight*: Layer-Wise SPSA achieves **14x higher precision** than Holistic SPSA because decoupling coordinates eliminates destructive cross-coupling gradient noise.
+*Insight*: Layer-Wise SPSA achieves higher precision than Holistic SPSA because decoupling coordinates eliminates destructive cross-coupling gradient noise.
 
 ---
 

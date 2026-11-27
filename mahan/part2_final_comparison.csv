@@ -1,0 +1,5 @@
+Optimizer,Backprop,Final_Train_Loss,Final_Train_Acc,Final_Test_Acc,Total_Evals,Runtime_Sec
+"1. Holistic SPSA","No",692831070122409984.0000,29.50,24.00,24000,9.89
+"2. Layer-Wise SPSA","No",1334806291486343168.0000,50.00,50.00,24000,5.30
+"3. GD (Full-Batch)","Yes",nan,50.00,50.00,300,1.67
+"4. SGD (Mini-Batch)","Yes",8.5783,100.00,100.00,300,0.58

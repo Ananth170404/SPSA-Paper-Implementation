@@ -33,6 +33,14 @@ A comprehensive implementation and empirical reproduction of **Simultaneous Pert
 │           ├── part2_decision_boundaries.png        # 2D decision boundary landscapes for all models
 │           └── loss_every_20_epochs.csv              # Neural network 20-epoch checkpoint logs
 │
+├── mahan/                               # Mahan's demonstration notebook & benchmark suite
+│   ├── mahan.ipynb                      # Executed Jupyter Notebook with all outputs & plots
+│   ├── mahan_code.py                    # Standalone, runnable Python script
+│   ├── run_mahan.py                     # Execution runner script
+│   ├── README.md                        # Experimental documentation & results
+│   ├── figures/                         # High-resolution generated figures
+│   └── *.csv                            # Checkpoint data logs
+│
 ├── CITATION.cff                         # Citation metadata
 ├── LICENSE                              # MIT License
 ├── requirements.txt                     # Dependencies
@@ -90,7 +98,7 @@ $$f(x, y) = x^3 + y^3 - 3xy + 1.0$$
 | **9** | 135 | 0.001874 | 0.000198 | 0.000000 | 0.000005 |
 | **10** | 150 | **0.001602** | **0.000116** | **0.000000** | **0.000023** |
 
-*Insight*: Layer-Wise SPSA achieves **14x higher precision** than Holistic SPSA because decoupling coordinates eliminates destructive cross-coupling gradient noise.
+*Insight*: Layer-Wise SPSA achieves higher precision than Holistic SPSA because decoupling coordinates eliminates destructive cross-coupling gradient noise.
 
 ---
 
