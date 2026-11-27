@@ -33,14 +33,6 @@ A comprehensive implementation and empirical reproduction of **Simultaneous Pert
 │           ├── part2_decision_boundaries.png        # 2D decision boundary landscapes for all models
 │           └── loss_every_20_epochs.csv              # Neural network 20-epoch checkpoint logs
 │
-├── mahan/                               # Mahan's demonstration notebook & benchmark suite
-│   ├── mahan.ipynb                      # Executed Jupyter Notebook with all outputs & plots
-│   ├── mahan_code.py                    # Standalone, runnable Python script
-│   ├── run_mahan.py                     # Execution runner script
-│   ├── README.md                        # Experimental documentation & results
-│   ├── figures/                         # High-resolution generated figures
-│   └── *.csv                            # Checkpoint data logs
-│
 ├── CITATION.cff                         # Citation metadata
 ├── LICENSE                              # MIT License
 ├── requirements.txt                     # Dependencies
@@ -64,7 +56,7 @@ $$f(x, y) = x^3 + y^3 - 3xy + 1.0$$
 - **Non-Linear Cross-Coupling**: The $-3xy$ interaction generates non-separable Hessian coupling ($H_{12} = H_{21} = -3$).
 - **Critical Points & Saddle Landscape**:
   - **Saddle Point**: Located at $\mathbf{x}_{\text{saddle}} = (0.0, 0.0)$ with $f(0, 0) = 1.0$ and mixed eigenvalues $\lambda = \pm 3$.
-  - **Global Attractor Minimum**: Located at $\mathbf{x}^* = (1.0, 1.0)$ with optimal value $f(1, 1) = 0.0$.
+  - **Local Minimum (Minima)**: Located at $\mathbf{x}^* = (1.0, 1.0)$ with optimal value $f(1, 1) = 0.0$.
 - **Starting Point**: Initialized at an asymmetric coordinate $\mathbf{x}_0 = (2.0, 0.3)$ with starting loss $f(\mathbf{x}_0) = 7.2270$.
 
 #### Four Evaluated Optimizers:
@@ -75,7 +67,7 @@ $$f(x, y) = x^3 + y^3 - 3xy + 1.0$$
 
 #### Part 1 Performance Summary:
 
-| Optimizer Method | Gradient Source | Backprop / Analytic? | Forward Evals / Step | Final Loss | Final Coordinates $(x, y)$ | Target Minimum |
+| Optimizer Method | Gradient Source | Backprop / Analytic? | Forward Evals / Step | Final Loss | Final Coordinates $(x, y)$ | Target Local Minima |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
 | **1. Holistic SPSA** | Derivative-Free (Spall) | **No (0 bp)** | **2 forward** | **0.001602** | $(1.0232, 1.0219)$ | $(1.0, 1.0)$ |
 | **2. Layer-Wise SPSA** | Coordinate-Wise SPSA | **No (0 bp)** | **4 forward** | **0.000116** | $(1.0004, 0.9941)$ | $(1.0, 1.0)$ |

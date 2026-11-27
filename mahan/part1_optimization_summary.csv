@@ -1,5 +1,0 @@
-Method,Evals_Per_Step,Final_Loss,Final_X,Final_Y
-"1. Holistic SPSA","2 forward",0.001556,1.023244,1.021901
-"2. Coordinate-Wise FDSA","4 forward",0.000112,1.000373,0.994090
-"3. GD (Exact Analytical)","Exact Grad",0.000000,1.000000,1.000000
-"4. SGD (Noisy Gradient)","Noisy Grad",0.000005,1.001145,1.001491

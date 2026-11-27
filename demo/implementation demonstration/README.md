@@ -44,12 +44,12 @@ $$f(x, y) = x^3 + y^3 - 3xy + 1.0$$
 - **Pure cubic degree**: Contains $x^3$ and $y^3$, with **no quadratic $x^2 + y^2$ terms**.
 - **Coupled Curvature**: Cross-product $-3xy$ term generates non-separable Hessian coupling ($H_{12} = H_{21} = -3$).
 - **Saddle Point**: $\mathbf{x}_{\text{saddle}} = (0.0, 0.0)$, $f(0, 0) = 1.0$, eigenvalues $\lambda = \pm 3$.
-- **Global Minimum**: $\mathbf{x}^* = (1.0, 1.0)$, $f(1, 1) = 0.0$, eigenvalues $\lambda = 3, 9$.
+- **Local Minimum (Minima)**: $\mathbf{x}^* = (1.0, 1.0)$, $f(1, 1) = 0.0$, eigenvalues $\lambda = 3, 9$.
 - **Starting Point**: $\mathbf{x}_0 = (2.0, 0.3)$ with $f(\mathbf{x}_0) = 7.2270$.
 
 ### 3.2 Part 1 Optimization Results:
 
-| Optimizer Method | Gradient Source | Backprop / Analytic? | Forward Evals / Step | Final Loss | Final Coordinates $(x, y)$ | Target Minimum |
+| Optimizer Method | Gradient Source | Backprop / Analytic? | Forward Evals / Step | Final Loss | Final Coordinates $(x, y)$ | Target Local Minima |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
 | **1. Holistic SPSA** | Derivative-Free (Spall) | **No (0 bp)** | **2 forward** | **0.001602** | $(1.0232, 1.0219)$ | $(1.0, 1.0)$ |
 | **2. Layer-Wise SPSA** | Coordinate-Wise SPSA | **No (0 bp)** | **4 forward** | **0.000116** | $(1.0004, 0.9941)$ | $(1.0, 1.0)$ |
