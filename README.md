@@ -16,7 +16,8 @@ An implementation of **SPSA** and **layer-wise SPSA** for optimising mathematica
 .
 ├── demo/
 │   └── implementation demonstration/
-│       ├── spsa_demonstration.ipynb   # the full demonstration (code, tables, figures, takeaways)
+│       ├── spsa_demonstration.ipynb   # math functions + XOR/moons (Fig. 1)
+│       ├── MNIST_SPSA_vs_SGD.ipynb    # MNIST, 771,270 parameters (Fig. 2)
 │       ├── README.md                  # detailed results
 │       └── figures/                   # figures exported from the executed notebook
 ├── CITATION.cff
@@ -32,12 +33,13 @@ An implementation of **SPSA** and **layer-wise SPSA** for optimising mathematica
 | 1A | Minimise f(x, y) = x³ + y³ − 3xy + 1 from (2, 0.3) | SPSA (Algorithm 1) vs. `torch.optim.SGD` | Algorithm 1 |
 | 1B | Minimise ‖W₃W₂W₁ − M‖²_F (75 parameters in 3 "layers") | layer-wise vs. holistic SPSA vs. SGD | Algorithm 2 |
 | 2 | Classify XOR and moons with the 2×5×5×5×1 tanh network (81 parameters) | layer-wise SPSA (bottom-up, top-down, random order) vs. holistic SPSA vs. SGD | Sect. 4.1, Fig. 1a/b/d/e |
+| MNIST | Classify MNIST with a 784×784×196×10 network (771,270 parameters), 3 runs | layer-wise SPSA (weights, then biases) vs. holistic SPSA vs. SGD | Sect. 4.2, Fig. 2 |
 
 Every experiment is repeated over 100 trials. The notebook reports:
 - loss vs. iterations/epochs and loss vs. function evaluations;
 - held-out test accuracy, precision, recall, F1, confusion matrices and decision boundaries.
 
-The paper's 3-class circles task and MNIST experiment are not included. [Full results and details are in the demo README](demo/implementation%20demonstration/README.md).
+Only the paper's 3-class circles task (Fig. 1c) is not included. [Full results and details are in the demo README](demo/implementation%20demonstration/README.md).
 
 ## Headline results (100 trials, 25 epochs)
 
@@ -54,12 +56,18 @@ The paper's 3-class circles task and MNIST experiment are not included. [Full re
 
 **Part 1A:** SPSA reaches the minimum (1, 1) in all 100 trials, with a median final f of 3.7·10⁻⁸ after 300 function evaluations.
 
+**MNIST (771,270 parameters, 3 runs, paper settings a = c = 0.1, tₘₐₓ = 50):**
+- **Holistic SPSA fails,** as the paper reports: its error doubles in 2 epochs.
+- **Layer-wise SPSA learns without backpropagation:** test accuracy goes from 8.6% to 47.7% in 12 epochs. That is below the paper's ≈ 72%, and its error ends above its starting value.
+- **`torch.optim.SGD` (lr 0.01)** reaches 93.2% in 30 epochs, using 90 passes over the training set against SPSA's 7,200.
+
 ## Run it
 
 ```bash
 pip install -r requirements.txt
 cd "demo/implementation demonstration"
 jupyter notebook spsa_demonstration.ipynb      # Run All; about 7 min on a CUDA GPU, also runs on a CPU
+jupyter notebook MNIST_SPSA_vs_SGD.ipynb       # Run All; about 24 min on an RTX 3050 (reads data/mnist/mnist.npz or downloads MNIST)
 ```
 
 ## Citation

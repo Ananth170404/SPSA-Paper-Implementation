@@ -7,9 +7,11 @@ Everything is in one notebook, [`spsa_demonstration.ipynb`](spsa_demonstration.i
 
 ```text
 demo/implementation demonstration/
-├── spsa_demonstration.ipynb        # the whole demonstration: code, tables, figures, takeaways
+├── spsa_demonstration.ipynb        # Parts 1–2: math functions, XOR and moons (Fig. 1)
+├── MNIST_SPSA_vs_SGD.ipynb         # MNIST, 771,270 parameters (Sect. 4.2, Fig. 2)
 ├── README.md                       # this file
-└── figures/                        # figures exported from the executed notebook
+└── figures/                        # figures exported from the executed notebooks
+    ├── mnist_*.png                 # 6 MNIST figures
     ├── part1a_cubic_spsa_vs_sgd.png
     ├── part1b_layerwise_matrix_factorisation.png
     ├── part2_datasets.png
@@ -33,7 +35,7 @@ demo/implementation demonstration/
 - **Network.** 2×5×5×5×1 with biases (81 parameters), tanh(0.5·z) on all layers including the output, labels ±1, loss Eq. 9 (sum of squared residuals).
 - **Protocol.** 100 random initialisations and 25 epochs, as in Fig. 1d/1e. Holistic SPSA is the baseline and gets the same number of function evaluations as layer-wise SPSA.
 - **Not given by the paper.** The paper does not report a, c or tₘₐₓ for Fig. 1. We use tₘₐₓ = 50 (its MNIST value) and choose a, c and the SGD learning rate by sweeps on separate tuning seeds.
-- **Not reproduced.** The 3-class circles task (Fig. 1c) and MNIST (Fig. 2). The paper's XOR/moons data is not published, so it is regenerated (200 train / 100 test points).
+- **Not reproduced.** The 3-class circles task (Fig. 1c). MNIST (Fig. 2) has its own notebook, described below. The paper's XOR/moons data is not published, so it is regenerated (200 train / 100 test points).
 - **Coordinate-wise finite differences are not in the paper** and are not used.
 
 ## Part 1A: SPSA vs. SGD on f(x, y) = x³ + y³ − 3xy + 1
@@ -103,10 +105,44 @@ All methods get 3,000 function evaluations (equivalents for SGD), 100 trials.
 3. **On this small network the real gain is step-size tolerance.** Holistic SPSA with its own smaller step size does as well (XOR 5.80, moons 9.14). On the matrix-product function, holistic SPSA diverges in every trial at the layer-wise step size.
 4. **SGD is far more efficient per unit of compute.** Layer-wise SPSA is ahead per epoch, but one SPSA epoch costs 400 dataset passes against SGD's 3. With 900 passes, SGD reaches a 100% test accuracy on moons. The paper makes the same caveat: *"we neither aim for a quantitative comparison between the two approaches nor for achieving state of the art results."* SPSA's value is training with forward passes only.
 
+## MNIST: layer-wise SPSA vs. `torch.optim.SGD` (paper Sect. 4.2, Fig. 2)
+
+Notebook: [`MNIST_SPSA_vs_SGD.ipynb`](MNIST_SPSA_vs_SGD.ipynb). It runs in about 24 minutes on an RTX 3050; the 3 runs of each method train in parallel.
+
+**Set-up, as in the paper:**
+- Network: 784×784×196×10 = 771,270 parameters, tanh with β = 1, one-hot targets.
+- SPSA: bottom-up, with **weights then biases** of each layer as separate calls; a = 0.1, c = 0.1, tₘₐₓ = 50, α = 1, γ = 1/6.
+- 3 runs per method.
+- Baseline: `torch.optim.SGD` with the paper's learning rate of 0.01 (batch 64).
+- Every SPSA evaluation uses all 60,000 training images.
+
+| Method | Epochs | Full passes | Test accuracy per run | Final E per image |
+|---|---|---|---|---|
+| Holistic SPSA | 2 | 1,200 | 26.8 / 28.2 / 32.8% | 4.93 / 4.61 / 5.32 (start ≈ 2.3) |
+| Layer-wise SPSA | 12 | 7,200 | 48.2 / 51.2 / 43.7% | 2.56 / 2.62 / 2.85 (start ≈ 2.3) |
+| SGD (`torch.optim.SGD`) | 30 | 90 | 93.3 / 93.2 / 93.1% | 0.23 |
+
+- **As in the paper:**
+  - Holistic SPSA fails: its error doubles.
+  - Layer-wise SPSA learns from forward passes only: test accuracy goes from 8.6% to 47.7% (mean over the 3 runs).
+- **Not as in the paper:**
+  - The paper shows ≈ 72% accuracy and an error of ≈ 1.3 after 12 epochs.
+  - Here the error ends *above* its start, so no run counts as "successful" under our rule (final E below starting E). The paper-style average is therefore the mean of all 3 runs.
+  - The per-update plot shows why: each SPSA call restarts at the largest step a₁ = 0.1, which moves every weight of the layer at once. E jumps up, then only partly recovers.
+  - The paper does not report its initialisation, input scaling or gain exponents, and these change the effective step size.
+- **SGD:** with the same learning rate, it reaches 93.2% using 1/80 of SPSA's compute. The paper's own GD baseline was much slower (≈ 75% after 250 epochs).
+
+![MNIST Fig. 2 style](figures/mnist_fig2_error_accuracy.png)
+![MNIST error vs compute](figures/mnist_error_vs_compute.png)
+![MNIST confusion matrices](figures/mnist_confusion_matrices.png)
+
 ## How to run
 
 ```bash
 pip install -r ../../requirements.txt
 cd "demo/implementation demonstration"
 jupyter notebook spsa_demonstration.ipynb      # Run All; about 7 min on a GPU
+jupyter notebook MNIST_SPSA_vs_SGD.ipynb       # Run All; about 24 min on a GPU
 ```
+
+The MNIST notebook reads `data/mnist/mnist.npz` at the repository root, or downloads MNIST with `torchvision` if the file is missing.
