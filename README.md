@@ -1,187 +1,68 @@
-# SPSA: Simultaneous Perturbation Stochastic Approximation & Layer-Wise Deep Learning
+# SPSA Paper Implementation
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-1.13+-ee4c2c.svg)](https://pytorch.org/)
 
-A comprehensive implementation and empirical reproduction of **Simultaneous Perturbation Stochastic Approximation (SPSA)** for continuous mathematical optimization and forward-only deep neural network training without backpropagation, based on:
+An implementation of **SPSA** and **layer-wise SPSA** for optimising mathematical functions and for training neural networks **without backpropagation**, compared against `torch.optim.SGD`. It is based on:
 
-> **B. Wulff, J. Schuecker, C. Bauckhage.**  
-> *SPSA for Layer-Wise Training of Deep Networks.*  
-> International Conference on Artificial Neural Networks (**ICANN 2018**), LNCS 11141, pp. 564–573.  
-> DOI: [10.1007/978-3-030-01424-7_55](https://doi.org/10.1007/978-3-030-01424-7_55)
+> **B. Wulff, J. Schuecker, C. Bauckhage.** *SPSA for Layer-Wise Training of Deep Networks.* ICANN 2018, LNCS 11141, pp. 564–573. DOI: [10.1007/978-3-030-01424-7_55](https://doi.org/10.1007/978-3-030-01424-7_55)
 
-**Implementation Contributors**:
-- **Ananth Shyam**
-- **Rama Narasimha**
-- **Mahan Bhimireddy**
+**Implementation by**: Ananth Shyam, Rama Narasimha and Mahan Bhimireddy
 
----
-
-## 1. Repository Architecture
+## Repository layout
 
 ```text
 .
 ├── demo/
-│   └── implementation demonstration/    # Interactive, standalone SPSA demonstration & experimental study
-│       ├── spsa_demonstration.ipynb     # Interactive Jupyter Notebook (Math, Code, Figures, Tables)
-│       ├── README.md                    # Detailed documentation for the demonstration suite
-│       └── figures/                     # Publication-quality figures & periodic checkpoint CSV logs
-│           ├── part1_spsa_math_convergence.png       # 2D contour paths & semi-log loss curves
-│           ├── part1_math_convergence_intervals.csv   # Checkpoint logs every 15 iterations (Part 1)
-│           ├── part2_loss_accuracy_comparison.png    # Loss vs Epochs and Classification Accuracy curves (1x2 layout)
-│           ├── part2_decision_boundaries.png        # 2D decision boundary landscapes for all models
-│           └── loss_every_20_epochs.csv              # Neural network 20-epoch checkpoint logs
-│
-├── CITATION.cff                         # Citation metadata
-├── LICENSE                              # MIT License
-├── requirements.txt                     # Dependencies
-└── README.md                            # Main project overview (This file)
+│   └── implementation demonstration/
+│       ├── spsa_demonstration.ipynb   # the full demonstration (code, tables, figures, takeaways)
+│       ├── README.md                  # detailed results
+│       └── figures/                   # figures exported from the executed notebook
+├── CITATION.cff
+├── LICENSE
+├── requirements.txt
+└── README.md
 ```
 
----
+## What the notebook does
 
-## 2. Implementation Demonstration (`demo/implementation demonstration/`)
+| Part | Task | Methods | Paper |
+|---|---|---|---|
+| 1A | Minimise f(x, y) = x³ + y³ − 3xy + 1 from (2, 0.3) | SPSA (Algorithm 1) vs. `torch.optim.SGD` | Algorithm 1 |
+| 1B | Minimise ‖W₃W₂W₁ − M‖²_F (75 parameters in 3 "layers") | layer-wise vs. holistic SPSA vs. SGD | Algorithm 2 |
+| 2 | Classify XOR and moons with the 2×5×5×5×1 tanh network (81 parameters) | layer-wise SPSA (bottom-up, top-down, random order) vs. holistic SPSA vs. SGD | Sect. 4.1, Fig. 1a/b/d/e |
 
-The `demo/implementation demonstration/` directory delivers a self-contained, publication-grade experimental study that investigates SPSA's behavior across two distinct regimes: continuous mathematical function optimization and forward-only deep neural network classification.
+Every experiment is repeated over 100 trials. The notebook reports:
+- loss vs. iterations/epochs and loss vs. function evaluations;
+- held-out test accuracy, precision, recall, F1, confusion matrices and decision boundaries.
 
-### 2.1 Part 1: Continuous Function Optimization on a Complex Landscape
+The paper's 3-class circles task and MNIST experiment are not included. [Full results and details are in the demo README](demo/implementation%20demonstration/README.md).
 
-Part 1 tests SPSA against analytical gradient descent on a challenging, non-convex mathematical landscape: the **Coupled Non-Convex Cubic Polynomial**:
+## Headline results (100 trials, 25 epochs)
 
-$$f(x, y) = x^3 + y^3 - 3xy + 1.0$$
+**Part 2, mean training error E (lower is better):**
 
-#### Landscape Properties:
-- **Pure Cubic Monomials**: Contains pure degree-3 cubic terms ($x^3, y^3$) with **no quadratic $x^2 + y^2$ terms**.
-- **Non-Linear Cross-Coupling**: The $-3xy$ interaction generates non-separable Hessian coupling ($H_{12} = H_{21} = -3$).
-- **Critical Points & Saddle Landscape**:
-  - **Saddle Point**: Located at $\mathbf{x}_{\text{saddle}} = (0.0, 0.0)$ with $f(0, 0) = 1.0$ and mixed eigenvalues $\lambda = \pm 3$.
-  - **Local Minimum (Minima)**: Located at $\mathbf{x}^* = (1.0, 1.0)$ with optimal value $f(1, 1) = 0.0$.
-- **Starting Point**: Initialized at an asymmetric coordinate $\mathbf{x}_0 = (2.0, 0.3)$ with starting loss $f(\mathbf{x}_0) = 7.2270$.
+| Task | Layer-wise SPSA (bottom-up) | Holistic SPSA, same gains | SGD, 25 epochs | SGD, 300 epochs |
+|---|---|---|---|---|
+| XOR | **3.03** (test acc 99.3%) | 50.75 (93.0%) | 5.28 (99.2%) | 0.91 (99.2%) |
+| Moons | **20.41** (test acc 96.0%) | 74.27 (88.7%) | 46.71 (89.3%) | 0.05 (100%) |
 
-#### Four Evaluated Optimizers:
-1. **Holistic SPSA** (Spall 1992, 1998): Standard simultaneous Rademacher perturbation ($\Delta \in \{-1, +1\}^2$; strictly 2 forward evaluations per iteration).
-2. **Layer-Wise SPSA**: Coordinate-wise perturbation freezing one coordinate at a time ($2p = 4$ forward evaluations per iteration; eliminates cross-coupling perturbation noise).
-3. **GD (Exact Analytical Gradient Descent)**: Full-batch analytical gradient descent using PyTorch's built-in `torch.optim.SGD`.
-4. **SGD (Stochastic Gradient Descent)**: Mini-batch / stochastic gradient descent using PyTorch's built-in `torch.optim.SGD`.
+**What this shows:**
+- **Layer-wise SPSA beats holistic SPSA, and the layer order hardly matters,** as the paper reports.
+- **SGD needs far less compute.** It uses 3 dataset passes per epoch against SPSA's 400, so given 900 passes it beats SPSA's 10,000-pass result.
 
-#### Part 1 Performance Summary:
+**Part 1A:** SPSA reaches the minimum (1, 1) in all 100 trials, with a median final f of 3.7·10⁻⁸ after 300 function evaluations.
 
-| Optimizer Method | Gradient Source | Backprop / Analytic? | Forward Evals / Step | Final Loss | Final Coordinates $(x, y)$ | Target Local Minima |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| **1. Holistic SPSA** | Derivative-Free (Spall) | **No (0 bp)** | **2 forward** | **0.001602** | $(1.0232, 1.0219)$ | $(1.0, 1.0)$ |
-| **2. Layer-Wise SPSA** | Coordinate-Wise SPSA | **No (0 bp)** | **4 forward** | **0.000116** | $(1.0004, 0.9941)$ | $(1.0, 1.0)$ |
-| **3. GD (Built-in)** | PyTorch `torch.optim.SGD` | **Yes (Autodiff)** | Exact Grad | **0.000000** | $(1.0000, 1.0000)$ | $(1.0, 1.0)$ |
-| **4. SGD (Built-in)** | PyTorch `torch.optim.SGD` | **Yes (Autodiff)** | Noisy Grad | **0.000023** | $(1.0010, 1.0013)$ | $(1.0, 1.0)$ |
-
-#### Epoch-Wise Convergence Comparison (10 Epoch Cycles, 15 Updates / Epoch):
-
-| Epoch | Iteration | 1. Holistic SPSA Loss | 2. Layer-Wise SPSA Loss | 3. Built-in GD Loss | 4. Built-in SGD Loss |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| **0** | 0 | 7.227000 | 7.227000 | 7.227000 | 7.227000 |
-| **1** | 15 | 0.226168 | 0.578728 | 0.000919 | 0.000918 |
-| **2** | 30 | 0.036917 | 0.112899 | 0.000003 | 0.000045 |
-| **3** | 45 | 0.015183 | 0.030824 | 0.000000 | 0.000016 |
-| **4** | 60 | 0.007560 | 0.010251 | 0.000000 | 0.000002 |
-| **5** | 75 | 0.004893 | 0.003904 | 0.000000 | 0.000060 |
-| **6** | 90 | 0.003374 | 0.001648 | 0.000000 | 0.000032 |
-| **7** | 105 | 0.002515 | 0.000757 | 0.000000 | 0.000152 |
-| **8** | 120 | 0.002213 | 0.000374 | 0.000000 | 0.000052 |
-| **9** | 135 | 0.001874 | 0.000198 | 0.000000 | 0.000005 |
-| **10** | 150 | **0.001602** | **0.000116** | **0.000000** | **0.000023** |
-
-*Insight*: Layer-Wise SPSA achieves higher precision than Holistic SPSA because decoupling coordinates eliminates destructive cross-coupling gradient noise.
-
----
-
-### 2.2 Part 2: Neural Network Classification Without Backpropagation
-
-Part 2 trains an 81-parameter multi-layer feed-forward neural network on the non-linear **Concentric Circles Dataset** ($N=250$, factor $= 0.4$, noise $\sigma = 0.06$).
-
-- **Architecture**: $2 \to 5 \to 5 \to 5 \to 1$ ($L=4$ layers, tanh activations, $\beta = 0.5$).
-- **Objective**: Soft Margin Quadratic Loss $L = \sum_i (f(x_i) - y_i)^2$.
-- **Fair Initialization**: All 4 optimizers start from the exact same initial parameter weights $p_0$.
-
-#### Four Compared Optimizers:
-1. **Holistic SPSA** (Spall, 1992): Perturbs all 81 parameters across all 4 layers simultaneously; **strictly 0 backprop**.
-2. **Layer-Wise SPSA** (Wulff et al., ICANN 2018): Updates each layer independently using derivative-free forward perturbations; **strictly 0 backprop**.
-3. **GD (Full-Batch Gradient Descent)**: Full-batch analytical gradient descent using PyTorch's built-in `torch.optim.SGD`.
-4. **SGD (Mini-Batch Stochastic Gradient Descent)**: Mini-batch stochastic gradient descent using PyTorch's built-in `torch.optim.SGD`.
-
-#### Part 2 Overall Performance Summary:
-
-| Method | Backpropagation? | Initial Loss | Final Loss | Accuracy (%) | Runtime (s) |
-|:---|:---:|:---:|:---:|:---:|:---:|
-| **1. Holistic SPSA** | **No (0 bp)** | 249.92 | 352.0000 | 64.8% | 12.66 s |
-| **2. Layer-Wise SPSA** | **No (0 bp)** | 249.92 | **0.0216** | **100.0%** | 7.62 s |
-| **3. Built-in GD** | Yes (`torch.optim.SGD`) | 249.92 | **6.1283** | **100.0%** | 0.15 s |
-| **4. Built-in SGD** | Yes (`torch.optim.SGD`) | 249.92 | **0.2977** | **100.0%** | 1.03 s |
-
-#### Table 2A: Initial Epoch Dynamics (Epochs 0 to 20 — Loss & Accuracy):
-
-| Epoch | 1. Holistic SPSA (0 bp) | 2. Layer-Wise SPSA (0 bp) | 3. Built-in GD | 4. Built-in SGD |
-|:---:|:---:|:---:|:---:|:---:|
-| **0** | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) |
-| **1** | Loss: 215.00 (78.4%) | **Loss: 186.18 (81.2%)** | Loss: 247.89 (66.4%) | Loss: 241.11 (58.8%) |
-| **2** | Loss: 336.00 (66.4%) | **Loss: 209.51 (66.8%)** | Loss: 246.87 (37.6%) | Loss: 238.46 (66.4%) |
-| **3** | Loss: 352.00 (64.8%) | **Loss: 112.21 (86.4%)** | Loss: 248.64 (64.0%) | Loss: 234.20 (66.4%) |
-| **5** | Loss: 352.00 (64.8%) | **Loss: 83.75 (89.6%)** | Loss: 261.73 (58.8%) | Loss: 218.11 (68.0%) |
-| **10** | Loss: 352.00 (64.8%) | **Loss: 72.88 (92.8%)** | Loss: 258.93 (50.0%) | Loss: 163.52 (79.6%) |
-| **15** | Loss: 352.00 (64.8%) | **Loss: 1.29 (100.0%)** | Loss: 251.70 (60.8%) | Loss: 129.18 (83.2%) |
-| **20** | Loss: 352.00 (64.8%) | **Loss: 0.26 (100.0%)** | Loss: 242.83 (50.0%) | **Loss: 47.13 (96.4%)** |
-
-#### Table 2B: Full Training Progression (Logged Every 20 Epochs to Epoch 100):
-
-| Epoch | 1. Holistic SPSA (0 bp) | 2. Layer-Wise SPSA (0 bp) | 3. Built-in GD | 4. Built-in SGD |
-|:---:|:---:|:---:|:---:|:---:|
-| **0** | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) | Loss: 249.92 (42.0%) |
-| **20** | Loss: 352.00 (64.8%) | **Loss: 0.26 (100.0%)** | Loss: 242.83 (50.0%) | Loss: 47.13 (96.4%) |
-| **40** | Loss: 352.00 (64.8%) | **Loss: 0.06 (100.0%)** | Loss: 206.03 (56.0%) | **Loss: 1.53 (100.0%)** |
-| **60** | Loss: 352.00 (64.8%) | **Loss: 0.04 (100.0%)** | Loss: 144.42 (79.2%) | **Loss: 0.67 (100.0%)** |
-| **80** | Loss: 352.00 (64.8%) | **Loss: 0.03 (100.0%)** | Loss: 111.61 (87.6%) | **Loss: 0.42 (100.0%)** |
-| **100** | Loss: 352.00 (64.8%) | **Loss: 0.02 (100.0%)** | **Loss: 6.13 (100.0%)** | **Loss: 0.30 (100.0%)** |
-
----
-
-### 2.3 Scientific Verification of ICANN 2018 Paper Claims
-
-#### Claim 1: Layer-Wise SPSA Achieves Faster Learning than GD in Initial Epochs
-Section 4.2 & Figure 2 of Wulff et al. (ICANN 2018) observe that Layer-Wise SPSA learns faster than gradient descent in the initial epochs. Our experimental logs directly verify this:
-- At **Epoch 1**, Layer-Wise SPSA achieves **81.2% accuracy** ($L = 186.18$), outperforming GD ($66.4\%$) and SGD ($58.8\%$).
-- By **Epoch 15**, Layer-Wise SPSA reaches **100.0% accuracy** ($L = 1.29$), whereas GD is at $60.8\%$ and SGD is at $83.2\%$.
-
-**Theoretical Explanation**:
-1. **Finite Exploratory Jumps ($c_t \Delta$)**: SPSA evaluates loss at $\theta \pm c_t \Delta$. Unlike infinitesimal gradients ($\nabla L \approx 0$) that vanish on flat saddles, finite displacement acts as a stochastic probe that explores the local neighborhood and escapes plateau regions immediately.
-2. **Directional Update Frequency**: Layer-Wise SPSA performs $t_{\text{max}} \times L = 120$ directional parameter adjustments per epoch, compared to 1 update per epoch for full-batch GD.
-
-#### Claim 2: Asymptotic Equivalence (All Successful Optimizers Converge Similarly at the End)
-By Epoch 100, Layer-Wise SPSA (**100.0% accuracy**, loss $0.0216$) matches the performance of exact analytical backpropagation optimizers (GD: **100.0%**, loss $6.1283$; SGD: **100.0%**, loss $0.2977$). All three close identical circular decision boundaries.
-
-#### Claim 3: Holistic SPSA Fails on Deep Networks
-Perturbing all 81 parameters simultaneously yields gradient variance scaling as $O(D)$. Destructive cross-layer interference dilutes updates, causing Holistic SPSA to stagnate at $64.8\%$ accuracy.
-
-#### Claim 4: Derivative-Free / 0 Backpropagation
-Layer-Wise SPSA achieves these results using strictly forward evaluations with zero backward computation graph storage, providing biological plausibility and compatibility with neuromorphic and analog hardware.
-
----
-
-### 2.4 How to Run the Demonstration Suite
-
-The complete demonstration is self-contained in the interactive Jupyter Notebook:
+## Run it
 
 ```bash
-# Navigate to the demonstration directory
+pip install -r requirements.txt
 cd "demo/implementation demonstration"
-
-# Launch the interactive Jupyter Notebook
-jupyter notebook spsa_demonstration.ipynb
+jupyter notebook spsa_demonstration.ipynb      # Run All; about 7 min on a CUDA GPU, also runs on a CPU
 ```
 
----
-
-## 3. Citation
-
-If you use this codebase or reproduction in your research, please cite:
+## Citation
 
 ```bibtex
 @inproceedings{wulff2018spsa,
