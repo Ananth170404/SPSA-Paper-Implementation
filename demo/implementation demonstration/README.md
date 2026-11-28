@@ -107,30 +107,30 @@ All methods get 3,000 function evaluations (equivalents for SGD), 100 trials.
 
 ## MNIST: layer-wise SPSA vs. `torch.optim.SGD` (paper Sect. 4.2, Fig. 2)
 
-Notebook: [`MNIST_SPSA_vs_SGD.ipynb`](MNIST_SPSA_vs_SGD.ipynb). It runs in about 24 minutes on an RTX 3050; the 3 runs of each method train in parallel.
+Notebook: [`MNIST_SPSA_vs_SGD.ipynb`](MNIST_SPSA_vs_SGD.ipynb). It runs in about 20 minutes on an RTX 3050; the 3 runs of each method train in parallel.
 
-**Set-up, as in the paper:**
+**Set-up:**
 - Network: 784×784×196×10 = 771,270 parameters, tanh with β = 1, one-hot targets.
-- SPSA: bottom-up, with **weights then biases** of each layer as separate calls; a = 0.1, c = 0.1, tₘₐₓ = 50, α = 1, γ = 1/6.
-- 3 runs per method.
-- Baseline: `torch.optim.SGD` with the paper's learning rate of 0.01 (batch 64).
-- Every SPSA evaluation uses all 60,000 training images.
+- SPSA: bottom-up, with **weights then biases** of each layer as separate calls; c = 0.1, tₘₐₓ = 50, α = 1, γ = 1/6. It is **applied per mini-batch of 100 images**, following the paper's *"each application of SPSA entails t_max partial weight updates, while GD only contains one update of all parameters per batch"*.
+- Step size **a = 0.01**, chosen by a step-size test (the table is in the notebook). The paper's a = 0.1 makes the error rise at our objective scale.
+- 3 runs per method; 2 SPSA epochs (each 600 mini-batches × 300 updates).
+- Baseline: `torch.optim.SGD` with the paper's learning rate of 0.01 (batch 64), 30 epochs.
 
-| Method | Epochs | Full passes | Test accuracy per run | Final E per image |
+| Method | Full passes | Peak test accuracy (mean of 3) | Test accuracy at the end, per run | E per image: start → end |
 |---|---|---|---|---|
-| Holistic SPSA | 2 | 1,200 | 26.8 / 28.2 / 32.8% | 4.93 / 4.61 / 5.32 (start ≈ 2.3) |
-| Layer-wise SPSA | 12 | 7,200 | 48.2 / 51.2 / 43.7% | 2.56 / 2.62 / 2.85 (start ≈ 2.3) |
-| SGD (`torch.optim.SGD`) | 30 | 90 | 93.3 / 93.2 / 93.1% | 0.23 |
+| Holistic SPSA (0.2 epochs) | 120 | 60.1% | 63.1 / 60.0 / 57.1% | ≈ 2.3 → **3.5 (rises)** |
+| Layer-wise SPSA (2 epochs) | 1,200 | **72.7%** at epoch 0.42 | 26.7 / 36.8 / 37.5% | ≈ 2.3 → 1.18 at the peak, 1.20 at the end |
+| SGD (`torch.optim.SGD`, 30 epochs) | 90 | 93.2% | 93.3 / 93.2 / 93.1% | ≈ 2.3 → 0.23 |
 
 - **As in the paper:**
-  - Holistic SPSA fails: its error doubles.
-  - Layer-wise SPSA learns from forward passes only: test accuracy goes from 8.6% to 47.7% (mean over the 3 runs).
+  - Layer-wise SPSA reaches **≈ 73% test accuracy** (73.2 / 73.5 / 73.2% per run) with **E ≈ 1.2**, against the paper's ≈ 72% and E ≈ 1.3.
+  - It does this without backpropagation, and all 3 runs learn.
+  - Holistic SPSA's error **rises**, which is the paper's "failed to learn". Its test accuracy still reaches about 60%.
 - **Not as in the paper:**
-  - The paper shows ≈ 72% accuracy and an error of ≈ 1.3 after 12 epochs.
-  - Here the error ends *above* its start, so no run counts as "successful" under our rule (final E below starting E). The paper-style average is therefore the mean of all 3 runs.
-  - The per-update plot shows why: each SPSA call restarts at the largest step a₁ = 0.1, which moves every weight of the layer at once. E jumps up, then only partly recovers.
-  - The paper does not report its initialisation, input scaling or gain exponents, and these change the effective step size.
-- **SGD:** with the same learning rate, it reaches 93.2% using 1/80 of SPSA's compute. The paper's own GD baseline was much slower (≈ 75% after 250 epochs).
+  - After about half an epoch, layer-wise SPSA's accuracy collapses, to 34% after 2 epochs, while E stays near 1.1–1.3. E ≈ 1 is also what a network gets by outputting ≈ 0 for every digit. The paper's plot stops before any collapse.
+  - We use a = 0.01, not 0.1. The paper's batch size and objective scale aren't reported.
+  - Evaluating SPSA on the full training set instead gives only 47.7% after 12 epochs.
+- **SGD:** with the paper's learning rate, it reaches 80% after 1 epoch (3 full passes) and 93.2% after 30, without collapsing. SPSA needs ≈ 250 passes to reach its 73% peak.
 
 ![MNIST Fig. 2 style](figures/mnist_fig2_error_accuracy.png)
 ![MNIST error vs compute](figures/mnist_error_vs_compute.png)
@@ -142,7 +142,7 @@ Notebook: [`MNIST_SPSA_vs_SGD.ipynb`](MNIST_SPSA_vs_SGD.ipynb). It runs in about
 pip install -r ../../requirements.txt
 cd "demo/implementation demonstration"
 jupyter notebook spsa_demonstration.ipynb      # Run All; about 7 min on a GPU
-jupyter notebook MNIST_SPSA_vs_SGD.ipynb       # Run All; about 24 min on a GPU
+jupyter notebook MNIST_SPSA_vs_SGD.ipynb       # Run All; about 20 min on a GPU
 ```
 
 The MNIST notebook reads `data/mnist/mnist.npz` at the repository root, or downloads MNIST with `torchvision` if the file is missing.

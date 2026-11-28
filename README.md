@@ -56,10 +56,11 @@ Only the paper's 3-class circles task (Fig. 1c) is not included. [Full results a
 
 **Part 1A:** SPSA reaches the minimum (1, 1) in all 100 trials, with a median final f of 3.7·10⁻⁸ after 300 function evaluations.
 
-**MNIST (771,270 parameters, 3 runs, paper settings a = c = 0.1, tₘₐₓ = 50):**
-- **Holistic SPSA fails,** as the paper reports: its error doubles in 2 epochs.
-- **Layer-wise SPSA learns without backpropagation:** test accuracy goes from 8.6% to 47.7% in 12 epochs. That is below the paper's ≈ 72%, and its error ends above its starting value.
-- **`torch.optim.SGD` (lr 0.01)** reaches 93.2% in 30 epochs, using 90 passes over the training set against SPSA's 7,200.
+**MNIST (771,270 parameters, 3 runs; SPSA applied per mini-batch of 100, a = 0.01, c = 0.1, tₘₐₓ = 50):**
+- **Layer-wise SPSA reproduces the paper's result without backpropagation:** a peak test accuracy of 72.7% (mean of 3 runs) with E ≈ 1.2. The paper reports ≈ 72% and E ≈ 1.3.
+- **After the peak, accuracy collapses** to 34% by epoch 2. The paper's plot doesn't go that far.
+- **Holistic SPSA's error rises,** which is the paper's "failed to learn".
+- **`torch.optim.SGD` (the paper's lr 0.01)** reaches 93.2% in 30 epochs, using 90 passes over the training set against SPSA's 1,200.
 
 ## Run it
 
@@ -67,7 +68,7 @@ Only the paper's 3-class circles task (Fig. 1c) is not included. [Full results a
 pip install -r requirements.txt
 cd "demo/implementation demonstration"
 jupyter notebook spsa_demonstration.ipynb      # Run All; about 7 min on a CUDA GPU, also runs on a CPU
-jupyter notebook MNIST_SPSA_vs_SGD.ipynb       # Run All; about 24 min on an RTX 3050 (reads data/mnist/mnist.npz or downloads MNIST)
+jupyter notebook MNIST_SPSA_vs_SGD.ipynb       # Run All; about 20 min on an RTX 3050 (reads data/mnist/mnist.npz or downloads MNIST)
 ```
 
 ## Citation
